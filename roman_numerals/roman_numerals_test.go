@@ -1,33 +1,49 @@
 package romannumerals
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 func TestRomanNumerals(t *testing.T) {
 	cases := []struct {
 		Description string
 		Arabic      int
-		Want        string
+		Roman       string
 	}{
-		{"converts 1 to I", 1, "I"},
-		{"converts 2 to II", 2, "II"},
-		{"converts 3 to III", 3, "III"},
-		{"converts 4 to IV", 4, "IV"},
-		{"converts 5 to V", 5, "V"},
-		{"converts 6 to VI", 6, "VI"},
-		{"converts 7 to VII", 7, "VII"},
-		{"converts 8 to VIII", 8, "VIII"},
-		{"converts 9 to IX", 9, "IX"},
-		{"converts 10 to X", 10, "X"},
-		{"converts 15 to XV", 15, "XV"},
-		{"converts 23 to XXIII", 23, "XXIII"},
-		{"converts 39 to IXXXX", 39, "XXXIX"},
+		{Arabic: 1, Roman: "I"},
+		{Arabic: 2, Roman: "II"},
+		{Arabic: 3, Roman: "III"},
+		{Arabic: 4, Roman: "IV"},
+		{Arabic: 5, Roman: "V"},
+		{Arabic: 6, Roman: "VI"},
+		{Arabic: 7, Roman: "VII"},
+		{Arabic: 8, Roman: "VIII"},
+		{Arabic: 9, Roman: "IX"},
+		{Arabic: 10, Roman: "X"},
+		{Arabic: 15, Roman: "XV"},
+		{Arabic: 23, Roman: "XXIII"},
+		{Arabic: 39, Roman: "XXXIX"},
+		{Arabic: 40, Roman: "XL"},
+		{Arabic: 47, Roman: "XLVII"},
+		{Arabic: 49, Roman: "XLIX"},
+		{Arabic: 50, Roman: "L"},
+		{Arabic: 90, Roman: "XC"},
+		{Arabic: 100, Roman: "C"},
+		{Arabic: 400, Roman: "CD"},
+		{Arabic: 500, Roman: "D"},
+		{Arabic: 900, Roman: "CM"},
+		{Arabic: 1000, Roman: "M"},
+		{Arabic: 1984, Roman: "MCMLXXXIV"},
+		{Arabic: 3999, Roman: "MMMCMXCIX"},
+		{Arabic: 798, Roman: "DCCXCVIII"},
 	}
 
 	for _, test := range cases {
-		t.Run(test.Description, func(t *testing.T) {
+		t.Run(fmt.Sprintf("converts %d to %q", test.Arabic, test.Roman), func(t *testing.T) {
 			got := ConvertToRoman(test.Arabic)
-			if got != test.Want {
-				t.Errorf("got %q want %q", got, test.Want)
+			if got != test.Roman {
+				t.Errorf("got %q want %q", got, test.Roman)
 			}
 		})
 	}
