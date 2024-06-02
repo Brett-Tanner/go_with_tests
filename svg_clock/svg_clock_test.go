@@ -1,33 +1,64 @@
 package svgclock
 
 import (
-	"fmt"
+	"math"
 	"testing"
 	"time"
 )
 
-func TestSecondHand(t *testing.T) {
+func TestSecondsInRadians(t *testing.T) {
 	cases := []struct {
-		Time  time.Time
-		Point Point
+		time  time.Time
+		angle float64
 	}{
-		{
-			time.Date(1337, time.January, 1, 0, 0, 0, 0, time.UTC),
-			Point{X: CENTER, Y: CENTER - 90},
-		},
-		{
-			time.Date(1337, time.January, 1, 0, 30, 0, 0, time.UTC),
-			Point{X: CENTER, Y: CENTER + 90},
-		},
+		{simpleTime(0, 0, 30), math.Pi},
+		{simpleTime(0, 0, 0), 0},
+		{simpleTime(0, 0, 45), (math.Pi / 2) * 3},
+		{simpleTime(0, 0, 7), (math.Pi / 30) * 7},
 	}
 
-	for _, test := range cases {
-		t.Run(fmt.Sprintf("second hand points at %v at %q", test.Point, test.Time.Format("3:04PM")), func(t *testing.T) {
-			got := SecondHand(test.Time)
-
-			if got != test.Point {
-				t.Errorf("Got %v want %v", got, test.Point)
+	for _, c := range cases {
+		t.Run(testName(c.time), func(t *testing.T) {
+			got := secondsInRadians(c.time)
+			if got != c.angle {
+				t.Fatalf("wanted %v got %v", c.angle, got)
 			}
 		})
 	}
+}
+
+func TestSecondHandVector(t *testing.T) {
+	cases := []struct {
+		time  time.Time
+		point Point
+	}{
+		{simpleTime(0, 0, 30), Point{0, -1}},
+		{simpleTime(0, 0, 45), Point{-1, 0}},
+	}
+
+	for _, c := range cases {
+		t.Run(testName(c.time), func(t *testing.T) {
+			got := secondHandPoint(c.time)
+			if !roughlyEqualPoint(got, c.point) {
+				t.Fatalf("wanted %v but got %v", c.point, got)
+			}
+		})
+	}
+}
+
+func simpleTime(h, m, s int) time.Time {
+	return time.Date(1337, time.December, 18, h, m, s, 0, time.UTC)
+}
+
+func testName(time time.Time) string {
+	return time.Format("15:04:05")
+}
+
+func roughlyEqualPoint(a, b Point) bool {
+	return roughlyEqualFloat64(a.X, b.X) && roughlyEqualFloat64(a.Y, b.Y)
+}
+
+func roughlyEqualFloat64(a, b float64) bool {
+	const equalityThreshold = 1e-7
+	return math.Abs(a-b) < equalityThreshold
 }
