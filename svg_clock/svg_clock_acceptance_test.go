@@ -31,10 +31,10 @@ type Line struct {
 	Y2 float64 `xml:"y2,attr"`
 }
 
-func TestSVGWriter(t *testing.T) {
+func TestSVGWriterSecondHand(t *testing.T) {
 	cases := []struct {
-		Time time.Time
-		Line Line
+		time time.Time
+		line Line
 	}{
 		{simpleTime(1, 0, 0), Line{150, 150, 150, 60}},
 		{simpleTime(0, 0, 30), Line{150, 150, 150, 240}},
@@ -42,16 +42,39 @@ func TestSVGWriter(t *testing.T) {
 
 	for _, c := range cases {
 		b := bytes.Buffer{}
-		SVGWriter(&b, c.Time)
+		SVGWriter(&b, c.time)
 
 		svg := SVG{}
 		xml.Unmarshal(b.Bytes(), &svg)
 
-		if !containsLine(c.Line, svg.Lines) {
-			t.Errorf("Expected secondhand line %+v in SVG lines %+v", c.Line, svg.Lines)
+		if !containsLine(c.line, svg.Lines) {
+			t.Errorf("Expected secondhand line %+v in SVG lines %+v", c.line, svg.Lines)
 		}
 	}
 }
+
+// func TestSVGWriterMinuteHand(t *testing.T) {
+// 	cases := []struct {
+// 		time time.Time
+// 		line Line
+// 	}{
+// 		{simpleTime(0, 0, 0), Line{150, 150, 150, 70}},
+// 	}
+//
+// 	for _, c := range cases {
+// 		t.Run(testName(c.time), func(t *testing.T) {
+// 			b := bytes.Buffer{}
+// 			SVGWriter(&b, c.time)
+//
+// 			svg := SVG{}
+// 			xml.Unmarshal(b.Bytes(), &svg)
+//
+// 			if !containsLine(c.line, svg.Lines) {
+// 				t.Errorf("Expected minute hand line %+v in SVG lines %+v", c.line, svg.Lines)
+// 			}
+// 		})
+// 	}
+// }
 
 func containsLine(l Line, lines []Line) bool {
 	for _, line := range lines {
