@@ -9,6 +9,7 @@ import (
 
 var (
 	CENTER             float64 = 150
+	MINUTE_HAND_LENGTH float64 = 80
 	SECOND_HAND_LENGTH float64 = 90
 )
 
@@ -21,14 +22,27 @@ func SVGWriter(w io.Writer, t time.Time) {
 	io.WriteString(w, svgStart)
 	io.WriteString(w, bezel)
 	secondHand(w, t)
+	minuteHand(w, t)
 	io.WriteString(w, svgEnd)
 }
 
 func secondHand(w io.Writer, t time.Time) {
-	p := secondHandPoint(t)
-	p = Point{p.X * SECOND_HAND_LENGTH, p.Y * SECOND_HAND_LENGTH}
+	p := makeHand(secondHandPoint(t), SECOND_HAND_LENGTH)
+	drawLine(w, p)
+}
+
+func minuteHand(w io.Writer, t time.Time) {
+	p := makeHand(minuteHandPoint(t), MINUTE_HAND_LENGTH)
+	drawLine(w, p)
+}
+
+func makeHand(p Point, l float64) Point {
+	p = Point{p.X * l, p.Y * l}
 	p = Point{p.X, -p.Y}
-	p = Point{p.X + CENTER, p.Y + CENTER}
+	return Point{p.X + CENTER, p.Y + CENTER}
+}
+
+func drawLine(w io.Writer, p Point) {
 	fmt.Fprintf(w, `<line x1="150" y1="150" x2="%.3f" y2="%.3f" style="fill:none;stroke:#000;stroke-width:3px;"/>`, p.X, p.Y)
 }
 
