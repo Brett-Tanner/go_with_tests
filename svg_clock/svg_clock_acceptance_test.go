@@ -59,6 +59,7 @@ func TestSVGWriterMinuteHand(t *testing.T) {
 		line Line
 	}{
 		{simpleTime(0, 0, 0), Line{150, 150, 150, 70}},
+		{simpleTime(0, 45, 0), Line{150, 150, 70, 150}},
 	}
 
 	for _, c := range cases {
@@ -71,6 +72,30 @@ func TestSVGWriterMinuteHand(t *testing.T) {
 
 			if !containsLine(c.line, svg.Lines) {
 				t.Errorf("Expected minute hand line %+v in SVG lines %+v", c.line, svg.Lines)
+			}
+		})
+	}
+}
+
+func TestSVGWriterHourHand(t *testing.T) {
+	cases := []struct {
+		time time.Time
+		line Line
+	}{
+		{simpleTime(6, 0, 0), Line{150, 150, 150, 200}},
+		{simpleTime(3, 0, 0), Line{150, 150, 200, 150}},
+	}
+
+	for _, c := range cases {
+		t.Run(testName(c.time), func(t *testing.T) {
+			b := bytes.Buffer{}
+			SVGWriter(&b, c.time)
+
+			svg := SVG{}
+			xml.Unmarshal(b.Bytes(), &svg)
+
+			if !containsLine(c.line, svg.Lines) {
+				t.Errorf("Expected hour hand line %+v in SVG lines %+v", c.line, svg.Lines)
 			}
 		})
 	}

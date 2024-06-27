@@ -20,7 +20,7 @@ func TestSecondsInRadians(t *testing.T) {
 	for _, c := range cases {
 		t.Run(testName(c.time), func(t *testing.T) {
 			got := secondsInRadians(c.time)
-			if got != c.angle {
+			if !roughlyEqualFloat64(got, c.angle) {
 				t.Fatalf("wanted %v got %v", c.angle, got)
 			}
 		})
