@@ -8,10 +8,16 @@ import (
 )
 
 var (
-	CENTER             float64 = 150
-	HOUR_HAND_LENGTH   float64 = 50
-	MINUTE_HAND_LENGTH float64 = 80
-	SECOND_HAND_LENGTH float64 = 90
+	clockCenter        float64 = 150
+	hourHandLength     float64 = 50
+	hoursInHalfClock   float64 = 6
+	hoursInFullClock   float64 = 12
+	minuteHandLength   float64 = 80
+	minutesInHalfClock float64 = 30
+	minutesInFullClock float64 = 60
+	secondHandLength   float64 = 90
+	secondsInHalfClock float64 = 30
+	secondsInFullClock float64 = 60
 )
 
 type Point struct {
@@ -29,24 +35,24 @@ func SVGWriter(w io.Writer, t time.Time) {
 }
 
 func secondHand(w io.Writer, t time.Time) {
-	p := makeHand(secondHandPoint(t), SECOND_HAND_LENGTH)
+	p := makeHand(secondHandPoint(t), secondHandLength)
 	drawLine(w, p)
 }
 
 func minuteHand(w io.Writer, t time.Time) {
-	p := makeHand(minuteHandPoint(t), MINUTE_HAND_LENGTH)
+	p := makeHand(minuteHandPoint(t), minuteHandLength)
 	drawLine(w, p)
 }
 
 func hourHand(w io.Writer, t time.Time) {
-	p := makeHand(hourHandPoint(t), HOUR_HAND_LENGTH)
+	p := makeHand(hourHandPoint(t), hourHandLength)
 	drawLine(w, p)
 }
 
 func makeHand(p Point, l float64) Point {
 	p = Point{p.X * l, p.Y * l}
 	p = Point{p.X, -p.Y}
-	return Point{p.X + CENTER, p.Y + CENTER}
+	return Point{p.X + clockCenter, p.Y + clockCenter}
 }
 
 func drawLine(w io.Writer, p Point) {
@@ -58,7 +64,7 @@ func secondHandPoint(t time.Time) Point {
 }
 
 func secondsInRadians(t time.Time) float64 {
-	return (math.Pi / (30 / float64(t.Second())))
+	return (math.Pi / (secondsInHalfClock / float64(t.Second())))
 }
 
 func minuteHandPoint(t time.Time) Point {
@@ -66,7 +72,7 @@ func minuteHandPoint(t time.Time) Point {
 }
 
 func minutesInRadians(t time.Time) float64 {
-	return (secondsInRadians(t) / 60) + (math.Pi / (30 / float64(t.Minute())))
+	return (secondsInRadians(t) / secondsInFullClock) + (math.Pi / (minutesInHalfClock / float64(t.Minute())))
 }
 
 func hourHandPoint(t time.Time) Point {
@@ -74,7 +80,7 @@ func hourHandPoint(t time.Time) Point {
 }
 
 func hoursInRadians(t time.Time) float64 {
-	return (math.Pi / (6 / float64(t.Hour()%12))) + (minutesInRadians(t) / 12)
+	return (math.Pi / (hoursInHalfClock / float64(t.Hour()%int(hoursInFullClock)))) + (minutesInRadians(t) / hoursInFullClock)
 }
 
 func angleToPoint(angle float64) Point {
