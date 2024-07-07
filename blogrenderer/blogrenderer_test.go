@@ -42,12 +42,7 @@ func TestRender(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		got := buf.String()
-		want := `<ol><li><a href="/posts/hello_1">Hello 1</a></li><li><a href="/posts/hello_2">Hello 2</a></li></ol>`
-
-		if got != want {
-			t.Errorf("got '%s', want '%s'", got, want)
-		}
+		approvals.VerifyString(t, buf.String())
 	})
 }
 

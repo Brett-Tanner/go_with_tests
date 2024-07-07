@@ -20,6 +20,10 @@ type Post struct {
 	Tags                     []string
 }
 
+func (p Post) SanitizedTitle() string {
+	return strings.ToLower(strings.Replace(p.Title, " ", "_", -1))
+}
+
 //go:embed "templates/*"
 var postTemplates embed.FS
 
@@ -35,14 +39,10 @@ func NewPostRenderer() (*PostRenderer, error) {
 func (r *PostRenderer) Render(w io.Writer, post Post) error {
 	post.Body = string(mdToHtml([]byte(post.Body)))
 
-	if err := r.templ.Execute(w, post); err != nil {
-		return err
-	}
-
-	return nil
+	return r.templ.ExecuteTemplate(w, "blog.gohtml", post)
 }
 
-func mdToHtml(md []byte) []byte {
+func mdToHtml(md []byte) template.HTML {
 	extensions := parser.CommonExtensions | parser.AutoHeadingIDs | parser.NoEmptyLineBeforeBlock
 	p := parser.NewWithExtensions(extensions)
 	doc := p.Parse(md)
@@ -51,24 +51,9 @@ func mdToHtml(md []byte) []byte {
 	opts := html.RendererOptions{Flags: htmlFlags}
 	htmlRenderer := html.NewRenderer(opts)
 
-	return markdown.Render(doc, htmlRenderer)
+	return template.HTML(markdown.Render(doc, htmlRenderer))
 }
 
 func (r *PostRenderer) RenderIndex(w io.Writer, posts []Post) error {
-	indexTemplate := `<ol>{{range.}}<li><a href="/posts/{{santizeTitle .Title}}">{{.Title}}</a></li>{{end}}</ol>`
-
-	templ, err := template.New("index").Funcs(template.FuncMap{
-		"santizeTitle": func(title string) string {
-			return strings.ToLower(strings.Replace(title, " ", "_", -1))
-		},
-	}).Parse(indexTemplate)
-	if err != nil {
-		return err
-	}
-
-	if err := templ.Execute(w, posts); err != nil {
-		return err
-	}
-
-	return nil
+	return r.templ.ExecuteTemplate(w, "index.gohtml", posts)
 }
