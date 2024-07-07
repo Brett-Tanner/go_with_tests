@@ -1,33 +1,54 @@
 package blogrenderer
 
 import (
-	"fmt"
+	"embed"
+	"html/template"
 	"io"
-	"strings"
+
+	"github.com/gomarkdown/markdown"
+	"github.com/gomarkdown/markdown/html"
+	"github.com/gomarkdown/markdown/parser"
 )
+
+type PostRenderer struct {
+	templ *template.Template
+}
 
 type Post struct {
 	Title, Description, Body string
 	Tags                     []string
 }
 
-func Render(w io.Writer, post Post) error {
-	_, err := fmt.Fprintf(w, `<h1>%s</h1>
-<p>%s</p>
-Tags: %s`, post.Title, post.Description, arrayToUList(post.Tags))
+//go:embed "templates/*"
+var postTemplates embed.FS
 
-	return err
-}
-
-func arrayToUList(listItems []string) string {
-	list := strings.Builder{}
-	list.WriteString("<ul>")
-
-	for _, item := range listItems {
-		fmt.Fprintf(&list, "<li>%s</li>", item)
+func NewPostRenderer() (*PostRenderer, error) {
+	templ, err := template.ParseFS(postTemplates, "templates/*.gohtml")
+	if err != nil {
+		return nil, err
 	}
 
-	list.WriteString("</ul>")
+	return &PostRenderer{templ: templ}, nil
+}
 
-	return list.String()
+func (r *PostRenderer) Render(w io.Writer, post Post) error {
+	post.Body = string(mdToHtml([]byte(post.Body)))
+
+	if err := r.templ.Execute(w, post); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func mdToHtml(md []byte) []byte {
+	extensions := parser.CommonExtensions | parser.AutoHeadingIDs | parser.NoEmptyLineBeforeBlock
+	p := parser.NewWithExtensions(extensions)
+	doc := p.Parse(md)
+
+	htmlFlags := html.CommonFlags | html.HrefTargetBlank
+	opts := html.RendererOptions{Flags: htmlFlags}
+	htmlRenderer := html.NewRenderer(opts)
+
+	return markdown.Render(doc, htmlRenderer)
 }

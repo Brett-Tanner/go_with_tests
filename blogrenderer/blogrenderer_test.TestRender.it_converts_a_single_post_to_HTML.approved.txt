@@ -1,0 +1,40 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>My Amazing Blog!</title>
+</head>
+<body>
+	<nav role="navigation">
+		<div>
+			<h1>Budding Brett's Benevolent Go Blog</h1>
+			<ul>
+				<li><a href="/">Home</a></li>
+				<li><a href="/about">About</a></li>
+				<li><a href="/archive">Archive</a></li>
+			</ul>
+		</div>
+
+	</nav>
+	<main>
+
+
+<h1>hello world</h1>
+<p>This is a description</p>
+Tags: <ul><li>go</li><li>tdd</li></ul>
+<article>&lt;h1 id=&#34;this-is-a-h1&#34;&gt;This is a h1&lt;/h1&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://google.com&#34; target=&#34;_blank&#34;&gt;here&amp;rsquo;s a link&lt;/a&gt;&lt;/p&gt;
+</article>
+
+
+</main>
+<footer>
+	<ul>
+		<li><a href="https://github.com/Brett-Tanner">Github</a></li>
+		<li><a href="https://brett-tanner.dev">Portfolio</a></li>
+	</ul>
+</footer>
+
