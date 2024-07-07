@@ -19,12 +19,12 @@ var post = blogrenderer.Post{
 }
 
 func TestRender(t *testing.T) {
-	t.Run("it converts a single post to HTML", func(t *testing.T) {
-		postRenderer, err := blogrenderer.NewPostRenderer()
-		if err != nil {
-			t.Fatal(err)
-		}
+	postRenderer, err := blogrenderer.NewPostRenderer()
+	if err != nil {
+		t.Fatal(err)
+	}
 
+	t.Run("it converts a single post to HTML", func(t *testing.T) {
 		buf := bytes.Buffer{}
 
 		if err := postRenderer.Render(&buf, post); err != nil {
@@ -32,6 +32,22 @@ func TestRender(t *testing.T) {
 		}
 
 		approvals.VerifyString(t, buf.String())
+	})
+
+	t.Run("it renders an index of posts", func(t *testing.T) {
+		buf := bytes.Buffer{}
+		posts := []blogrenderer.Post{{Title: "Hello 1"}, {Title: "Hello 2"}}
+
+		if err := postRenderer.RenderIndex(&buf, posts); err != nil {
+			t.Fatal(err)
+		}
+
+		got := buf.String()
+		want := `<ol><li><a href="/posts/hello_1">Hello 1</a></li><li><a href="/posts/hello_2">Hello 2</a></li></ol>`
+
+		if got != want {
+			t.Errorf("got '%s', want '%s'", got, want)
+		}
 	})
 }
 

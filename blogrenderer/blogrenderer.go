@@ -4,6 +4,7 @@ import (
 	"embed"
 	"html/template"
 	"io"
+	"strings"
 
 	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/html"
@@ -51,4 +52,23 @@ func mdToHtml(md []byte) []byte {
 	htmlRenderer := html.NewRenderer(opts)
 
 	return markdown.Render(doc, htmlRenderer)
+}
+
+func (r *PostRenderer) RenderIndex(w io.Writer, posts []Post) error {
+	indexTemplate := `<ol>{{range.}}<li><a href="/posts/{{santizeTitle .Title}}">{{.Title}}</a></li>{{end}}</ol>`
+
+	templ, err := template.New("index").Funcs(template.FuncMap{
+		"santizeTitle": func(title string) string {
+			return strings.ToLower(strings.Replace(title, " ", "_", -1))
+		},
+	}).Parse(indexTemplate)
+	if err != nil {
+		return err
+	}
+
+	if err := templ.Execute(w, posts); err != nil {
+		return err
+	}
+
+	return nil
 }
