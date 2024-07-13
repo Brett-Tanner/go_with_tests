@@ -1,29 +1,42 @@
 package main
 
-func Sum(numbers []int) int {
-	sum := 0
-	for _, num := range numbers {
-		sum += num
-	}
-	return sum
-}
-
 func SumAll(slicesToSum ...[]int) []int {
-	var results []int
-	for _, slice := range slicesToSum {
-		results = append(results, Sum(slice))
+	sumArr := func(accumulator, x []int) []int {
+		return sumFromOffset(0, accumulator, x)
 	}
-	return results
+
+	return Reduce(slicesToSum, sumArr, []int{})
 }
 
 func SumAllTails(slicesToSum ...[]int) []int {
-	var results []int
-	for _, slice := range slicesToSum {
-		if len(slice) == 0 {
-			results = append(results, 0)
-			continue
-		}
-		results = append(results, Sum(slice[1:]))
+	sumTail := func(accumulator, x []int) []int {
+		return sumFromOffset(1, accumulator, x)
 	}
-	return results
+
+	return Reduce(slicesToSum, sumTail, []int{})
+}
+
+func sumFromOffset(offset int, accumulator, arr []int) []int {
+	if len(arr) == 0 {
+		return append(accumulator, 0)
+	}
+
+	return append(accumulator, Sum(arr[offset:]))
+}
+
+func Sum(numbers []int) int {
+	return Reduce(numbers, add, 0)
+}
+
+func add(a, b int) int {
+	return a + b
+}
+
+func Reduce[T any](collection []T, accumulator func(T, T) T, initial T) T {
+	result := initial
+	for _, item := range collection {
+		result = accumulator(result, item)
+	}
+
+	return result
 }
