@@ -52,3 +52,31 @@ func TestSumAllTails(t *testing.T) {
 		checkSums(t, got, want)
 	})
 }
+
+func TestReduce(t *testing.T) {
+	t.Run("multiplying all elements", func(t *testing.T) {
+		multiply := func(a, b int) int {
+			return a * b
+		}
+
+		got := Reduce([]int{2, 3, 4}, multiply, 1)
+		want := 24
+
+		if got != want {
+			t.Fatalf("got %d want %d", got, want)
+		}
+	})
+
+	t.Run("concatenating strings", func(t *testing.T) {
+		concatenate := func(a, b string) string {
+			return a + b
+		}
+
+		got := Reduce([]string{"hello", " world"}, concatenate, "")
+		want := "hello world"
+
+		if got != want {
+			t.Fatalf("got '%s' want '%s'", got, want)
+		}
+	})
+}
