@@ -1,5 +1,24 @@
 package main
 
+type Transaction struct {
+	From, To string
+	Sum      float64
+}
+
+func BalanceFor(transactions []Transaction, name string) float64 {
+	balance := 0.0
+
+	for _, t := range transactions {
+		if name == t.From {
+			balance -= t.Sum
+		} else if name == t.To {
+			balance += t.Sum
+		}
+	}
+
+	return balance
+}
+
 func SumAll(slicesToSum ...[]int) []int {
 	sumArr := func(accumulator, x []int) []int {
 		return sumFromOffset(0, accumulator, x)
