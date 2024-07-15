@@ -6,17 +6,17 @@ type Transaction struct {
 }
 
 func BalanceFor(transactions []Transaction, name string) float64 {
-	balance := 0.0
-
-	for _, t := range transactions {
+	sumTransactions := func(balance float64, t Transaction) float64 {
 		if name == t.From {
 			balance -= t.Sum
 		} else if name == t.To {
 			balance += t.Sum
 		}
+
+		return balance
 	}
 
-	return balance
+	return Reduce(transactions, sumTransactions, 0.0)
 }
 
 func SumAll(slicesToSum ...[]int) []int {
@@ -51,7 +51,7 @@ func add(a, b int) int {
 	return a + b
 }
 
-func Reduce[T any](collection []T, accumulator func(T, T) T, initial T) T {
+func Reduce[A, B any](collection []A, accumulator func(B, A) B, initial B) B {
 	result := initial
 	for _, item := range collection {
 		result = accumulator(result, item)
