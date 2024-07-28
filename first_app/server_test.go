@@ -31,10 +31,7 @@ func TestGETPlayers(t *testing.T) {
 	t.Run("returns score for requested player", func(t *testing.T) {
 		for name, score := range players {
 			response := httptest.NewRecorder()
-			request, err := newGetScoreRequest(name)
-			if err != nil {
-				t.Fatal("Request failed")
-			}
+			request := newGetScoreRequest(name)
 
 			server.ServeHTTP(response, request)
 
@@ -44,11 +41,8 @@ func TestGETPlayers(t *testing.T) {
 	})
 
 	t.Run("returns 404 on missing players", func(t *testing.T) {
-		request, err := newGetScoreRequest("Artemis")
+		request := newGetScoreRequest("Artemis")
 		response := httptest.NewRecorder()
-		if err != nil {
-			t.Fatal("Request failed")
-		}
 
 		server.ServeHTTP(response, request)
 
@@ -56,9 +50,10 @@ func TestGETPlayers(t *testing.T) {
 	})
 }
 
-func newGetScoreRequest(name string) (*http.Request, error) {
+func newGetScoreRequest(name string) *http.Request {
 	path := fmt.Sprintf("/players/%v", name)
-	return http.NewRequest(http.MethodGet, path, nil)
+	response, _ := http.NewRequest(http.MethodGet, path, nil)
+	return response
 }
 
 func TestStoreWins(t *testing.T) {
