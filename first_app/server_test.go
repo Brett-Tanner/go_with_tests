@@ -26,7 +26,7 @@ func TestGETPlayers(t *testing.T) {
 		"Brett": 50,
 	}
 	store := StubPlayerStore{players, []string{}}
-	server := &PlayerServer{store: &store}
+	server := NewPlayerServer(&store)
 
 	t.Run("returns score for requested player", func(t *testing.T) {
 		for name, score := range players {
@@ -61,7 +61,7 @@ func TestStoreWins(t *testing.T) {
 		map[string]int{},
 		[]string{},
 	}
-	server := PlayerServer{&store}
+	server := NewPlayerServer(&store)
 
 	t.Run("it returns accepted on POST", func(t *testing.T) {
 		player := "Pepper"
@@ -83,6 +83,20 @@ func TestStoreWins(t *testing.T) {
 func newPostWinRequest(name string) *http.Request {
 	req, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("/players/%s", name), nil)
 	return req
+}
+
+func TestLeague(t *testing.T) {
+	store := StubPlayerStore{}
+	server := NewPlayerServer(&store)
+
+	t.Run("it returns 200 on /league", func(t *testing.T) {
+		request, _ := http.NewRequest(http.MethodGet, "/league", nil)
+		response := httptest.NewRecorder()
+
+		server.ServeHTTP(response, request)
+
+		assertStatus(t, response.Code, http.StatusOK)
+	})
 }
 
 func assertResponseBody(t testing.TB, got, want, name string) {
