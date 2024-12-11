@@ -53,6 +53,18 @@ func TestFileSystemPlayerStore(t *testing.T) {
 		want := 667
 		assertScoreEquals(t, got, want)
 	})
+
+	t.Run("store wins for new players", func(t *testing.T) {
+		database, dropDatabase := createTempFile(t, jsonLeague)
+		defer dropDatabase()
+		store := FileSystemPlayerStore{database}
+
+		store.RecordWin("New Player")
+
+		got := store.GetPlayerScore("New Player")
+		want := 1
+		assertScoreEquals(t, got, want)
+	})
 }
 
 func assertScoreEquals(t *testing.T, got, want int) {
