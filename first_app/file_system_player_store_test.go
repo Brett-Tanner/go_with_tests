@@ -15,7 +15,7 @@ func TestFileSystemPlayerStore(t *testing.T) {
 	t.Run("league from a Reader", func(t *testing.T) {
 		database, dropDatabase := createTempFile(t, jsonLeague)
 		defer dropDatabase()
-		store := FileSystemPlayerStore{database}
+		store := NewFileSystemPlayerStore(database)
 
 		got := store.GetLeague()
 
@@ -34,7 +34,7 @@ func TestFileSystemPlayerStore(t *testing.T) {
 	t.Run("get player score", func(t *testing.T) {
 		database, dropDatabase := createTempFile(t, jsonLeague)
 		defer dropDatabase()
-		store := FileSystemPlayerStore{database}
+		store := NewFileSystemPlayerStore(database)
 
 		got := store.GetPlayerScore("Dionysus")
 		want := 420
@@ -45,7 +45,7 @@ func TestFileSystemPlayerStore(t *testing.T) {
 	t.Run("record player win", func(t *testing.T) {
 		database, dropDatabase := createTempFile(t, jsonLeague)
 		defer dropDatabase()
-		store := FileSystemPlayerStore{database}
+		store := NewFileSystemPlayerStore(database)
 
 		store.RecordWin("Hades")
 
@@ -57,7 +57,7 @@ func TestFileSystemPlayerStore(t *testing.T) {
 	t.Run("store wins for new players", func(t *testing.T) {
 		database, dropDatabase := createTempFile(t, jsonLeague)
 		defer dropDatabase()
-		store := FileSystemPlayerStore{database}
+		store := NewFileSystemPlayerStore(database)
 
 		store.RecordWin("New Player")
 
