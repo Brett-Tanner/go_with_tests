@@ -2,10 +2,8 @@ package main
 
 import (
 	"fmt"
-	"io"
 	"net/http"
 	"net/http/httptest"
-	"reflect"
 	"testing"
 )
 
@@ -115,43 +113,6 @@ func TestLeague(t *testing.T) {
 		assertContentType(t, response, jsonContentType)
 		assertLeague(t, got, wantedLeague)
 	})
-}
-
-func newLeagueRequest() *http.Request {
-	request, _ := http.NewRequest(http.MethodGet, "/league", nil)
-	return request
-}
-
-func getLeagueFromResponse(t *testing.T, body io.Reader) []Player {
-	t.Helper()
-
-	got, err := NewLeague(body)
-	if err != nil {
-		t.Fatalf("Unable to parse response from server %q into Player slice, %v", body, err)
-	}
-
-	return got
-}
-
-func assertLeague(t testing.TB, got, wantedLeague []Player) {
-	t.Helper()
-	if !reflect.DeepEqual(got, wantedLeague) {
-		t.Errorf("got %v want %v", got, wantedLeague)
-	}
-}
-
-func assertResponseBody(t testing.TB, got, want, name string) {
-	t.Helper()
-	if got != want {
-		t.Errorf("got %q want %q for %q", got, want, name)
-	}
-}
-
-func assertStatus(t testing.TB, got, want int) {
-	t.Helper()
-	if got != want {
-		t.Errorf("got status %d want %d", got, want)
-	}
 }
 
 func assertContentType(t testing.TB, response *httptest.ResponseRecorder, want string) {

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"os"
 	"testing"
 )
 
@@ -14,7 +13,8 @@ func TestFileSystemPlayerStore(t *testing.T) {
 	t.Run("league from a Reader", func(t *testing.T) {
 		database, dropDatabase := createTempFile(t, jsonLeague)
 		defer dropDatabase()
-		store := NewFileSystemPlayerStore(database)
+		store, err := NewFileSystemPlayerStore(database)
+		assertNoError(t, err)
 
 		got := store.GetLeague()
 
@@ -33,7 +33,8 @@ func TestFileSystemPlayerStore(t *testing.T) {
 	t.Run("get player score", func(t *testing.T) {
 		database, dropDatabase := createTempFile(t, jsonLeague)
 		defer dropDatabase()
-		store := NewFileSystemPlayerStore(database)
+		store, err := NewFileSystemPlayerStore(database)
+		assertNoError(t, err)
 
 		got := store.GetPlayerScore("Dionysus")
 		want := 420
@@ -44,7 +45,8 @@ func TestFileSystemPlayerStore(t *testing.T) {
 	t.Run("record player win", func(t *testing.T) {
 		database, dropDatabase := createTempFile(t, jsonLeague)
 		defer dropDatabase()
-		store := NewFileSystemPlayerStore(database)
+		store, err := NewFileSystemPlayerStore(database)
+		assertNoError(t, err)
 
 		store.RecordWin("Hades")
 
@@ -56,7 +58,8 @@ func TestFileSystemPlayerStore(t *testing.T) {
 	t.Run("store wins for new players", func(t *testing.T) {
 		database, dropDatabase := createTempFile(t, jsonLeague)
 		defer dropDatabase()
-		store := NewFileSystemPlayerStore(database)
+		store, err := NewFileSystemPlayerStore(database)
+		assertNoError(t, err)
 
 		store.RecordWin("New Player")
 
@@ -72,22 +75,4 @@ func assertScoreEquals(t *testing.T, got, want int) {
 	if got != want {
 		t.Errorf("got %d want %d", got, want)
 	}
-}
-
-func createTempFile(t testing.TB, initialData string) (*os.File, func()) {
-	t.Helper()
-
-	tmpfile, err := os.CreateTemp("", "db")
-	if err != nil {
-		t.Fatalf("could not create tempfile, %v", err)
-	}
-
-	tmpfile.Write([]byte(initialData))
-
-	removeFile := func() {
-		tmpfile.Close()
-		os.Remove(tmpfile.Name())
-	}
-
-	return tmpfile, removeFile
 }

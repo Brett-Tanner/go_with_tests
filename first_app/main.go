@@ -14,9 +14,12 @@ func main() {
 		log.Fatalf("problem opening %s, %v", dbFileName, err)
 	}
 
-	store := NewFileSystemPlayerStore(database)
-	server := NewPlayerServer(store)
+	store, err := NewFileSystemPlayerStore(database)
+	if err != nil {
+		log.Fatalf("Unable to create player store, %v", err)
+	}
 
+	server := NewPlayerServer(store)
 	if err := http.ListenAndServe(":3000", server); err != nil {
 		log.Fatalf("could not listen on port 3000 %v", err)
 	}
