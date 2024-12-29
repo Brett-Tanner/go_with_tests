@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"sort"
 )
 
 type FileSystemPlayerStore struct {
@@ -44,6 +45,10 @@ func NewFileSystemPlayerStore(database *os.File) (*FileSystemPlayerStore, error)
 }
 
 func (f *FileSystemPlayerStore) GetLeague() League {
+	sort.Slice(f.league, func(i, j int) bool {
+		return f.league[i].Score > f.league[j].Score
+	})
+
 	return f.league
 }
 
