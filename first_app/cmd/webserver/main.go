@@ -4,6 +4,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+
+	poker "github.com/Brett-Tanner/go_with_tests/firstapp"
 )
 
 const dbFileName = "game.db.json"
@@ -14,12 +16,12 @@ func main() {
 		log.Fatalf("problem opening %s, %v", dbFileName, err)
 	}
 
-	store, err := NewFileSystemPlayerStore(database)
+	store, err := poker.NewFileSystemPlayerStore(database)
 	if err != nil {
 		log.Fatalf("Unable to create player store, %v", err)
 	}
 
-	server := NewPlayerServer(store)
+	server := poker.NewPlayerServer(store)
 	if err := http.ListenAndServe(":3000", server); err != nil {
 		log.Fatalf("could not listen on port 3000 %v", err)
 	}
