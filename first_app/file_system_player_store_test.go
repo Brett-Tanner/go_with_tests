@@ -1,7 +1,9 @@
-package poker
+package poker_test
 
 import (
 	"testing"
+
+	poker "github.com/Brett-Tanner/go_with_tests/firstapp"
 )
 
 func TestFileSystemPlayerStore(t *testing.T) {
@@ -11,30 +13,30 @@ func TestFileSystemPlayerStore(t *testing.T) {
 	]`
 
 	t.Run("league from a Reader", func(t *testing.T) {
-		database, dropDatabase := createTempFile(t, jsonLeague)
+		database, dropDatabase := poker.CreateTempFile(t, jsonLeague)
 		defer dropDatabase()
-		store, err := NewFileSystemPlayerStore(database)
-		assertNoError(t, err)
+		store, err := poker.NewFileSystemPlayerStore(database)
+		poker.AssertNoError(t, err)
 
 		got := store.GetLeague()
 
-		want := []Player{
+		want := []poker.Player{
 			{"Hades", 666},
 			{"Dionysus", 420},
 		}
 
-		assertLeague(t, got, want)
+		poker.AssertLeague(t, got, want)
 
 		// test it can read the same league again
 		got = store.GetLeague()
-		assertLeague(t, got, want)
+		poker.AssertLeague(t, got, want)
 	})
 
 	t.Run("get player score", func(t *testing.T) {
-		database, dropDatabase := createTempFile(t, jsonLeague)
+		database, dropDatabase := poker.CreateTempFile(t, jsonLeague)
 		defer dropDatabase()
-		store, err := NewFileSystemPlayerStore(database)
-		assertNoError(t, err)
+		store, err := poker.NewFileSystemPlayerStore(database)
+		poker.AssertNoError(t, err)
 
 		got := store.GetPlayerScore("Dionysus")
 		want := 420
@@ -43,10 +45,10 @@ func TestFileSystemPlayerStore(t *testing.T) {
 	})
 
 	t.Run("record player win", func(t *testing.T) {
-		database, dropDatabase := createTempFile(t, jsonLeague)
+		database, dropDatabase := poker.CreateTempFile(t, jsonLeague)
 		defer dropDatabase()
-		store, err := NewFileSystemPlayerStore(database)
-		assertNoError(t, err)
+		store, err := poker.NewFileSystemPlayerStore(database)
+		poker.AssertNoError(t, err)
 
 		store.RecordWin("Hades")
 
@@ -56,10 +58,10 @@ func TestFileSystemPlayerStore(t *testing.T) {
 	})
 
 	t.Run("store wins for new players", func(t *testing.T) {
-		database, dropDatabase := createTempFile(t, jsonLeague)
+		database, dropDatabase := poker.CreateTempFile(t, jsonLeague)
 		defer dropDatabase()
-		store, err := NewFileSystemPlayerStore(database)
-		assertNoError(t, err)
+		store, err := poker.NewFileSystemPlayerStore(database)
+		poker.AssertNoError(t, err)
 
 		store.RecordWin("New Player")
 
@@ -69,11 +71,11 @@ func TestFileSystemPlayerStore(t *testing.T) {
 	})
 
 	t.Run("works with empty file", func(t *testing.T) {
-		database, dropDatabase := createTempFile(t, "")
+		database, dropDatabase := poker.CreateTempFile(t, "")
 		defer dropDatabase()
-		_, err := NewFileSystemPlayerStore(database)
+		_, err := poker.NewFileSystemPlayerStore(database)
 
-		assertNoError(t, err)
+		poker.AssertNoError(t, err)
 	})
 }
 

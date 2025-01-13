@@ -23,8 +23,6 @@ type PlayerServer struct {
 	http.Handler
 }
 
-const jsonContentType = "application/json"
-
 func NewPlayerServer(store PlayerStore) *PlayerServer {
 	p := new(PlayerServer)
 	p.store = store
@@ -69,6 +67,6 @@ func playerNameFromRequest(r *http.Request) string {
 }
 
 func (p *PlayerServer) leagueHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("content-type", jsonContentType)
+	w.Header().Set("content-type", JsonContentType)
 	json.NewEncoder(w).Encode(p.store.GetLeague())
 }

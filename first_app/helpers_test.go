@@ -1,6 +1,7 @@
 package poker
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -9,7 +10,9 @@ import (
 	"testing"
 )
 
-func assertNoError(t testing.TB, err error) {
+const JsonContentType = "application/json"
+
+func AssertNoError(t testing.TB, err error) {
 	t.Helper()
 
 	if err != nil {
@@ -17,7 +20,7 @@ func assertNoError(t testing.TB, err error) {
 	}
 }
 
-func createTempFile(t testing.TB, initialData string) (*os.File, func()) {
+func CreateTempFile(t testing.TB, initialData string) (*os.File, func()) {
 	t.Helper()
 
 	tmpfile, err := os.CreateTemp("", "db")
@@ -35,12 +38,12 @@ func createTempFile(t testing.TB, initialData string) (*os.File, func()) {
 	return tmpfile, removeFile
 }
 
-func newLeagueRequest() *http.Request {
+func NewLeagueRequest() *http.Request {
 	request, _ := http.NewRequest(http.MethodGet, "/league", nil)
 	return request
 }
 
-func getLeagueFromResponse(t *testing.T, body io.Reader) []Player {
+func GetLeagueFromResponse(t *testing.T, body io.Reader) []Player {
 	t.Helper()
 
 	got, err := NewLeague(body)
@@ -51,28 +54,28 @@ func getLeagueFromResponse(t *testing.T, body io.Reader) []Player {
 	return got
 }
 
-func assertLeague(t testing.TB, got, wantedLeague []Player) {
+func AssertLeague(t testing.TB, got, wantedLeague []Player) {
 	t.Helper()
 	if !reflect.DeepEqual(got, wantedLeague) {
 		t.Errorf("got %v want %v", got, wantedLeague)
 	}
 }
 
-func assertResponseBody(t testing.TB, got, want, name string) {
+func AssertResponseBody(t testing.TB, got, want, name string) {
 	t.Helper()
 	if got != want {
 		t.Errorf("got %q want %q for %q", got, want, name)
 	}
 }
 
-func assertStatus(t testing.TB, got, want int) {
+func AssertStatus(t testing.TB, got, want int) {
 	t.Helper()
 	if got != want {
 		t.Errorf("got status %d want %d", got, want)
 	}
 }
 
-func assertPlayerWin(t testing.TB, store *StubPlayerStore, winner string) {
+func AssertPlayerWin(t testing.TB, store *StubPlayerStore, winner string) {
 	t.Helper()
 
 	if len(store.winCalls) != 1 {
@@ -81,4 +84,12 @@ func assertPlayerWin(t testing.TB, store *StubPlayerStore, winner string) {
 	if store.winCalls[0] != winner {
 		t.Errorf("expected %s to win but %s won", winner, store.winCalls[0])
 	}
+}
+
+func NewGetScoreRequest(t *testing.T, name string) *http.Request {
+	t.Helper()
+
+	path := fmt.Sprintf("/players/%v", name)
+	response, _ := http.NewRequest(http.MethodGet, path, nil)
+	return response
 }
