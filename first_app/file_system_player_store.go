@@ -7,9 +7,29 @@ import (
 	"sort"
 )
 
+const DbFileName = "game.db.json"
+
 type FileSystemPlayerStore struct {
 	database *json.Encoder
 	league   League
+}
+
+func FileSystemPlayerStoreFromFile(path string) (*FileSystemPlayerStore, func(), error) {
+	db, err := os.OpenFile(DbFileName, os.O_RDWR|os.O_CREATE, 0666)
+	if err != nil {
+		return nil, nil, fmt.Errorf("problem opening %s %v", DbFileName, err)
+	}
+
+	closeFunc := func() {
+		db.Close()
+	}
+
+	store, err := NewFileSystemPlayerStore(db)
+	if err != nil {
+		return nil, nil, fmt.Errorf("problem creating player store %v", err)
+	}
+
+	return store, closeFunc, nil
 }
 
 func initializePlayerDBFile(database *os.File) error {
