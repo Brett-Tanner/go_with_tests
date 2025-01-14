@@ -7,6 +7,8 @@ import (
 	"strings"
 )
 
+const JsonContentType = "application/json"
+
 type Player struct {
 	Name  string
 	Score int

@@ -9,30 +9,12 @@ import (
 	poker "github.com/Brett-Tanner/go_with_tests/firstapp"
 )
 
-type StubPlayerStore struct {
-	scores   map[string]int
-	winCalls []string
-	league   []poker.Player
-}
-
-func (s *StubPlayerStore) GetPlayerScore(name string) int {
-	return s.scores[name]
-}
-
-func (s *StubPlayerStore) RecordWin(name string) {
-	s.winCalls = append(s.winCalls, name)
-}
-
-func (s *StubPlayerStore) GetLeague() poker.League {
-	return s.league
-}
-
 func TestGETPlayers(t *testing.T) {
 	players := map[string]int{
 		"Vika":  20,
 		"Brett": 50,
 	}
-	store := StubPlayerStore{players, []string{}, nil}
+	store := poker.StubPlayerStore{players, []string{}, nil}
 	server := poker.NewPlayerServer(&store)
 
 	t.Run("returns score for requested player", func(t *testing.T) {
@@ -58,7 +40,7 @@ func TestGETPlayers(t *testing.T) {
 }
 
 func TestStoreWins(t *testing.T) {
-	store := StubPlayerStore{
+	store := poker.StubPlayerStore{
 		map[string]int{},
 		[]string{},
 		nil,
@@ -84,7 +66,7 @@ func TestLeague(t *testing.T) {
 		{"Zagreus", 50},
 	}
 
-	store := StubPlayerStore{nil, nil, wantedLeague}
+	store := poker.StubPlayerStore{nil, nil, wantedLeague}
 	server := poker.NewPlayerServer(&store)
 
 	t.Run("returns the league table as JSON", func(t *testing.T) {

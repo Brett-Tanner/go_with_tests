@@ -10,7 +10,23 @@ import (
 	"testing"
 )
 
-const JsonContentType = "application/json"
+type StubPlayerStore struct {
+	Scores   map[string]int
+	WinCalls []string
+	League   []Player
+}
+
+func (s *StubPlayerStore) GetPlayerScore(name string) int {
+	return s.Scores[name]
+}
+
+func (s *StubPlayerStore) RecordWin(name string) {
+	s.WinCalls = append(s.WinCalls, name)
+}
+
+func (s *StubPlayerStore) GetLeague() League {
+	return s.League
+}
 
 func AssertNoError(t testing.TB, err error) {
 	t.Helper()
@@ -78,11 +94,11 @@ func AssertStatus(t testing.TB, got, want int) {
 func AssertPlayerWin(t testing.TB, store *StubPlayerStore, winner string) {
 	t.Helper()
 
-	if len(store.winCalls) != 1 {
-		t.Errorf("got %d calls to RecordWin, wanted %d", len(store.winCalls), 1)
+	if len(store.WinCalls) != 1 {
+		t.Errorf("got %d calls to RecordWin, wanted %d", len(store.WinCalls), 1)
 	}
-	if store.winCalls[0] != winner {
-		t.Errorf("expected %s to win but %s won", winner, store.winCalls[0])
+	if store.WinCalls[0] != winner {
+		t.Errorf("expected %s to win but %s won", winner, store.WinCalls[0])
 	}
 }
 
