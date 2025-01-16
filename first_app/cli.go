@@ -2,6 +2,7 @@ package poker
 
 import (
 	"bufio"
+	"fmt"
 	"io"
 	"strings"
 	"time"
@@ -13,8 +14,13 @@ type CLI struct {
 	alerter  BlindAlerter
 }
 
-type BlindAlerter interface {
-	ScheduleAlertAt(duration time.Duration, amount int)
+type ScheduledAlert struct {
+	ScheduledAt time.Duration
+	Amount      int
+}
+
+func (s ScheduledAlert) String() string {
+	return fmt.Sprintf("%d chips at %v", s.Amount, s.ScheduledAt)
 }
 
 func NewCLI(store PlayerStore, in io.Reader, alerter BlindAlerter) *CLI {
@@ -25,8 +31,17 @@ func NewCLI(store PlayerStore, in io.Reader, alerter BlindAlerter) *CLI {
 	}
 }
 
+func (c *CLI) scheduleBlindAlerts() {
+	blinds := []int{100, 200, 300, 400, 500, 600, 800, 1000, 2000, 4000, 8000}
+	blindTime := 0 * time.Second
+	for _, blind := range blinds {
+		c.alerter.ScheduleAlertAt(blindTime, blind)
+		blindTime = blindTime + 10*time.Minute
+	}
+}
+
 func (c *CLI) PlayPoker() {
-	c.alerter.ScheduleAlertAt(5*time.Second, 100)
+	c.scheduleBlindAlerts()
 	userInput := c.readLine()
 	c.database.RecordWin(extractWinner(userInput))
 }
