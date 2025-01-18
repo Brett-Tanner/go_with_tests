@@ -1,6 +1,7 @@
 package poker_test
 
 import (
+	"bytes"
 	"fmt"
 	"strings"
 	"testing"
@@ -9,7 +10,7 @@ import (
 	poker "github.com/Brett-Tanner/go_with_tests/firstapp"
 )
 
-var dummySpyAlerter = &SpyBlindAlerter{}
+var dummyPlayerStore = &poker.StubPlayerStore{}
 
 type SpyBlindAlerter struct {
 	alerts []poker.ScheduledAlert
@@ -21,33 +22,70 @@ func (s *SpyBlindAlerter) ScheduleAlertAt(duration time.Duration, amount int) {
 
 func TestCLI(t *testing.T) {
 	t.Run("record Brett win from user input", func(t *testing.T) {
+		dummySpyAlerter := &SpyBlindAlerter{}
+		stdout := &bytes.Buffer{}
 		want := "Brett"
-		in := strings.NewReader(fmt.Sprintf("%s wins\n", want))
-		playerStore := &poker.StubPlayerStore{}
+		in := strings.NewReader(fmt.Sprintf("5\n%s wins\n", want))
 
-		cli := *poker.NewCLI(playerStore, in, dummySpyAlerter)
+		cli := *poker.NewCLI(dummyPlayerStore, in, stdout, dummySpyAlerter)
 		cli.PlayPoker()
 
-		poker.AssertPlayerWin(t, playerStore, want)
+		poker.AssertPlayerWin(t, dummyPlayerStore, want)
+	})
+
+	t.Run("prompts the user to enter the number of players", func(t *testing.T) {
+		dummySpyAlerter := &SpyBlindAlerter{}
+		in := strings.NewReader("7\n")
+		stdout := &bytes.Buffer{}
+		cli := poker.NewCLI(dummyPlayerStore, in, stdout, dummySpyAlerter)
+		cli.PlayPoker()
+
+		got := stdout.String()
+		want := poker.PlayerPrompt
+
+		if got != want {
+			t.Errorf("got %q want %q", got, want)
+		}
+
+		cases := []poker.ScheduledAlert{
+			{0 * time.Second, 100},
+			{12 * time.Minute, 200},
+			{24 * time.Minute, 300},
+			{36 * time.Minute, 400},
+		}
+
+		for i, want := range cases {
+			t.Run(fmt.Sprint(want), func(t *testing.T) {
+				if len(dummySpyAlerter.alerts) <= i {
+					t.Fatalf("alert %d was not scheduled %v", i, dummySpyAlerter.alerts)
+				}
+
+				got := dummySpyAlerter.alerts[i]
+				assertScheduledAlert(t, got, want)
+			})
+		}
 	})
 
 	t.Run("record Vika win from user input", func(t *testing.T) {
+		dummySpyAlerter := &SpyBlindAlerter{}
+		stdout := &bytes.Buffer{}
 		want := "Vika"
-		in := strings.NewReader(fmt.Sprintf("%s wins\n", want))
+		in := strings.NewReader(fmt.Sprintf("5\n%s wins\n", want))
 		playerStore := &poker.StubPlayerStore{}
 
-		cli := *poker.NewCLI(playerStore, in, dummySpyAlerter)
+		cli := *poker.NewCLI(playerStore, in, stdout, dummySpyAlerter)
 		cli.PlayPoker()
 
 		poker.AssertPlayerWin(t, playerStore, want)
 	})
 
-	t.Run(("scedules printing of blind values"), func(t *testing.T) {
-		in := strings.NewReader("Vika wins\n")
+	t.Run(("schedules printing of blind values"), func(t *testing.T) {
+		stdout := &bytes.Buffer{}
+		in := strings.NewReader("5\nVika wins\n")
 		playerStore := &poker.StubPlayerStore{}
 		blindAlerter := &SpyBlindAlerter{}
 
-		cli := poker.NewCLI(playerStore, in, blindAlerter)
+		cli := poker.NewCLI(playerStore, in, stdout, blindAlerter)
 		cli.PlayPoker()
 
 		cases := []poker.ScheduledAlert{
@@ -78,6 +116,8 @@ func TestCLI(t *testing.T) {
 }
 
 func assertScheduledAlert(t *testing.T, got, want poker.ScheduledAlert) {
+	t.Helper()
+
 	gotAmount := got.Amount
 	if gotAmount != want.Amount {
 		t.Errorf("got amount %d want amount %d", gotAmount, want.Amount)
