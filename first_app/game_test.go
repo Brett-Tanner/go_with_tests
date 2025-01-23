@@ -10,6 +10,8 @@ import (
 	poker "github.com/Brett-Tanner/go_with_tests/firstapp"
 )
 
+var dummyPlayerStore = &poker.StubPlayerStore{}
+
 func TestGameStart(t *testing.T) {
 	t.Run("prompts the user to enter the number of players", func(t *testing.T) {
 		dummySpyAlerter := &SpyBlindAlerter{}
@@ -30,10 +32,13 @@ func TestGameStart(t *testing.T) {
 	t.Run(("schedules printing of blind values"), func(t *testing.T) {
 		stdout := &bytes.Buffer{}
 		in := strings.NewReader("5\nVika wins\n")
-		playerStore := &poker.StubPlayerStore{}
 		blindAlerter := &SpyBlindAlerter{}
+		game := &poker.TexasHoldem{
+			&poker.StubPlayerStore{},
+			blindAlerter,
+		}
 
-		cli := poker.NewCLI(playerStore, in, stdout, blindAlerter)
+		cli := poker.NewCLI(in, stdout, game)
 		cli.PlayPoker()
 
 		cases := []poker.ScheduledAlert{
