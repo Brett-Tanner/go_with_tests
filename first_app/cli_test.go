@@ -58,6 +58,20 @@ func TestCLI(t *testing.T) {
 		assertCLIWin(t, game.FinishedWith, want)
 	})
 
+	t.Run("when invalid winner string entered, prompts again with error", func(t *testing.T) {
+		game := &GameSpy{}
+		stdout := &bytes.Buffer{}
+		in := strings.NewReader("3\nBrett is da coolest")
+
+		cli := *poker.NewCLI(in, stdout, game)
+		cli.PlayPoker()
+
+		assertMessagesSentToUser(
+			t, stdout,
+			poker.PlayerPrompt+poker.WinnerInputError,
+		)
+	})
+
 	t.Run("when non-numeric value entered, prints error and doesn't start game", func(t *testing.T) {
 		game := &GameSpy{}
 		stdout := &bytes.Buffer{}
@@ -66,17 +80,25 @@ func TestCLI(t *testing.T) {
 		cli := *poker.NewCLI(in, stdout, game)
 		cli.PlayPoker()
 
-		if game.StartCalled {
-			t.Error("game started but shouldn't have")
-		}
-
-		assertMessagesSentToUser(t, stdout, poker.PlayerPrompt+poker.InputTypeError)
+		assertGameNotStarted(t, game)
+		assertMessagesSentToUser(
+			t, stdout,
+			poker.PlayerPrompt+poker.InputTypeError,
+		)
 	})
 }
 
 func assertCLIWin(t *testing.T, got, want string) {
 	if got != want {
 		t.Errorf("expected %q to win but %q won", want, got)
+	}
+}
+
+func assertGameNotStarted(t *testing.T, game *GameSpy) {
+	t.Helper()
+
+	if game.StartCalled {
+		t.Error("game started but shouldn't have")
 	}
 }
 

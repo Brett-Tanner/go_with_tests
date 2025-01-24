@@ -10,8 +10,9 @@ import (
 )
 
 const (
-	PlayerPrompt   = "Please enter the number of players:\n"
-	InputTypeError = "Please enter a number\n"
+	PlayerPrompt     = "Please enter the number of players:\n"
+	InputTypeError   = "Please enter a number\n"
+	WinnerInputError = "Invalid format for winner entry. Please try again\n"
 )
 
 type Game interface {
@@ -52,12 +53,23 @@ func (c *CLI) PlayPoker() {
 
 	c.game.Start(numPlayers)
 
-	userInput := c.readLine()
-	c.game.Finish(extractWinner(userInput))
+	winner, err := extractWinner(c.readLine())
+	if err != nil {
+		fmt.Fprint(c.out, WinnerInputError)
+	}
+
+	c.game.Finish(winner)
 }
 
-func extractWinner(userInput string) string {
-	return strings.Replace(userInput, " wins", "", 1)
+func extractWinner(userInput string) (string, error) {
+	winnerSuffix := " wins"
+	if !strings.Contains(userInput, winnerSuffix) {
+		return "", fmt.Errorf("Winner entered incorrectly")
+	}
+
+	winner := strings.Replace(userInput, winnerSuffix, "", 1)
+
+	return winner, nil
 }
 
 func (c *CLI) readLine() string {
