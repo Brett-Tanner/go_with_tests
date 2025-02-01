@@ -14,7 +14,10 @@ func main() {
 	}
 	defer close()
 
-	server := poker.NewPlayerServer(store)
+	server, err := poker.NewPlayerServer(store)
+	if err != nil {
+		log.Fatalf("failed to create player server %v", err)
+	}
 
 	if err := http.ListenAndServe(":3000", server); err != nil {
 		log.Fatalf("could not listen on port 3000 %v", err)

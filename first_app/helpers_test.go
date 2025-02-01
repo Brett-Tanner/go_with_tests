@@ -59,6 +59,11 @@ func NewLeagueRequest() *http.Request {
 	return request
 }
 
+func NewGameRequest() *http.Request {
+	request, _ := http.NewRequest(http.MethodGet, "/game", nil)
+	return request
+}
+
 func GetLeagueFromResponse(t *testing.T, body io.Reader) []Player {
 	t.Helper()
 
@@ -72,6 +77,7 @@ func GetLeagueFromResponse(t *testing.T, body io.Reader) []Player {
 
 func AssertLeague(t testing.TB, got, wantedLeague []Player) {
 	t.Helper()
+
 	if !reflect.DeepEqual(got, wantedLeague) {
 		t.Errorf("got %v want %v", got, wantedLeague)
 	}
@@ -79,6 +85,7 @@ func AssertLeague(t testing.TB, got, wantedLeague []Player) {
 
 func AssertResponseBody(t testing.TB, got, want, name string) {
 	t.Helper()
+
 	if got != want {
 		t.Errorf("got %q want %q for %q", got, want, name)
 	}
@@ -86,6 +93,7 @@ func AssertResponseBody(t testing.TB, got, want, name string) {
 
 func AssertStatus(t testing.TB, got, want int) {
 	t.Helper()
+
 	if got != want {
 		t.Errorf("got status %d want %d", got, want)
 	}
@@ -95,7 +103,7 @@ func AssertPlayerWin(t testing.TB, store *StubPlayerStore, winner string) {
 	t.Helper()
 
 	if len(store.WinCalls) != 1 {
-		t.Errorf("got %d calls to RecordWin, wanted %d", len(store.WinCalls), 1)
+		t.Fatalf("got %d calls to RecordWin, wanted %d", len(store.WinCalls), 1)
 	}
 	if store.WinCalls[0] != winner {
 		t.Errorf("expected %s to win but %s won", winner, store.WinCalls[0])
@@ -108,4 +116,15 @@ func NewGetScoreRequest(t *testing.T, name string) *http.Request {
 	path := fmt.Sprintf("/players/%v", name)
 	response, _ := http.NewRequest(http.MethodGet, path, nil)
 	return response
+}
+
+func EnsurePlayerServerCreated(t *testing.T, store PlayerStore) *PlayerServer {
+	t.Helper()
+
+	server, err := NewPlayerServer(store)
+	if err != nil {
+		t.Fatalf("failed to create player server %v", err)
+	}
+
+	return server
 }
