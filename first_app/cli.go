@@ -15,11 +15,6 @@ const (
 	WinnerInputError = "Invalid format for winner entry. Please try again\n"
 )
 
-type Game interface {
-	Start(numPlayers int)
-	Finish(winner string)
-}
-
 type CLI struct {
 	in   *bufio.Scanner
 	out  io.Writer
@@ -51,7 +46,7 @@ func (c *CLI) PlayPoker() {
 		return
 	}
 
-	c.game.Start(numPlayers)
+	c.game.Start(numPlayers, c.out)
 
 	winner, err := extractWinner(c.readLine())
 	if err != nil {

@@ -13,13 +13,15 @@ import (
 	poker "github.com/Brett-Tanner/go_with_tests/firstapp"
 )
 
+var dummyGame = &GameSpy{}
+
 func TestGETPlayers(t *testing.T) {
 	players := map[string]int{
 		"Vika":  20,
 		"Brett": 50,
 	}
 	store := poker.StubPlayerStore{players, []string{}, nil}
-	server := poker.EnsurePlayerServerCreated(t, &store)
+	server := poker.EnsurePlayerServerCreated(t, &store, dummyGame)
 
 	t.Run("returns score for requested player", func(t *testing.T) {
 		for name, score := range players {
@@ -49,7 +51,7 @@ func TestStoreWins(t *testing.T) {
 		[]string{},
 		nil,
 	}
-	server := poker.EnsurePlayerServerCreated(t, &store)
+	server := poker.EnsurePlayerServerCreated(t, &store, dummyGame)
 
 	t.Run("it returns accepted on POST", func(t *testing.T) {
 		player := "Pepper"
@@ -71,7 +73,7 @@ func TestLeague(t *testing.T) {
 	}
 
 	store := poker.StubPlayerStore{nil, nil, wantedLeague}
-	server := poker.EnsurePlayerServerCreated(t, &store)
+	server := poker.EnsurePlayerServerCreated(t, &store, dummyGame)
 
 	t.Run("returns the league table as JSON", func(t *testing.T) {
 		request := poker.NewLeagueRequest()
@@ -89,7 +91,7 @@ func TestLeague(t *testing.T) {
 
 func TestGame(t *testing.T) {
 	t.Run("GET /game returns 200", func(t *testing.T) {
-		server := poker.EnsurePlayerServerCreated(t, &poker.StubPlayerStore{})
+		server := poker.EnsurePlayerServerCreated(t, &poker.StubPlayerStore{}, dummyGame)
 
 		request := poker.NewGameRequest()
 		response := httptest.NewRecorder()
@@ -99,22 +101,22 @@ func TestGame(t *testing.T) {
 		poker.AssertStatus(t, response.Code, http.StatusOK)
 	})
 
-	t.Run("when we get a message over a websocket it is the winner of a game", func(t *testing.T) {
-		store := &poker.StubPlayerStore{}
+	t.Run("start a game with 3 players and declare Vika the winner", func(t *testing.T) {
+		game := &GameSpy{}
 		winner := "Vika"
-		playerServer := poker.EnsurePlayerServerCreated(t, store)
+		store := &poker.StubPlayerStore{}
 
-		server := httptest.NewServer(playerServer)
+		server := httptest.NewServer(poker.EnsurePlayerServerCreated(t, store, game))
+		ws := ensureWebSocketDialed(t, "ws"+strings.TrimPrefix(server.URL, "http")+"/ws")
+		defer ws.Close()
 		defer server.Close()
 
-		wsURL := "ws" + strings.TrimPrefix(server.URL, "http") + "/ws"
-
-		ws := ensureWebSocketDialed(t, wsURL)
-		defer ws.Close()
+		writeWebSocketMessage(t, ws, "3")
 		writeWebSocketMessage(t, ws, winner)
 
 		time.Sleep(100 * time.Millisecond)
-		poker.AssertPlayerWin(t, store, winner)
+		assertGameStartedWith(t, game, 3)
+		assertFinishCalledWith(t, game, winner)
 	})
 }
 
@@ -142,5 +144,21 @@ func writeWebSocketMessage(t *testing.T, conn *websocket.Conn, message string) {
 
 	if err := conn.WriteMessage(websocket.TextMessage, []byte(message)); err != nil {
 		t.Fatalf("could not send message over WebSocket connection %v", err)
+	}
+}
+
+func assertGameStartedWith(t testing.TB, game *GameSpy, players int) {
+	t.Helper()
+
+	if game.StartedWith != players {
+		t.Errorf("wanted Start called with %d but got %d", players, game.StartedWith)
+	}
+}
+
+func assertFinishCalledWith(t testing.TB, game *GameSpy, winner string) {
+	t.Helper()
+
+	if game.FinishedWith != winner {
+		t.Errorf("expected %s to win but got %s", winner, game.FinishedWith)
 	}
 }

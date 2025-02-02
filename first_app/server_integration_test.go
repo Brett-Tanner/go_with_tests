@@ -15,7 +15,7 @@ func TestRecordingWinsAndRetrievingThem(t *testing.T) {
 	store, err := poker.NewFileSystemPlayerStore(database)
 	poker.AssertNoError(t, err)
 
-	server := poker.EnsurePlayerServerCreated(t, store)
+	server := poker.EnsurePlayerServerCreated(t, store, &GameSpy{})
 
 	player := "Preposterousa"
 	wins := 3

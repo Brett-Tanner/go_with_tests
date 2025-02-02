@@ -118,10 +118,10 @@ func NewGetScoreRequest(t *testing.T, name string) *http.Request {
 	return response
 }
 
-func EnsurePlayerServerCreated(t *testing.T, store PlayerStore) *PlayerServer {
+func EnsurePlayerServerCreated(t *testing.T, store PlayerStore, game Game) *PlayerServer {
 	t.Helper()
 
-	server, err := NewPlayerServer(store)
+	server, err := NewPlayerServer(store, game)
 	if err != nil {
 		t.Fatalf("failed to create player server %v", err)
 	}
