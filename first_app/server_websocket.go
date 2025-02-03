@@ -28,3 +28,12 @@ func (w *playerServerWebSocket) WaitForMsg() string {
 
 	return string(msg)
 }
+
+func (w *playerServerWebSocket) Write(p []byte) (int, error) {
+	err := w.WriteMessage(websocket.TextMessage, p)
+	if err != nil {
+		return 0, err
+	}
+
+	return len(p), nil
+}

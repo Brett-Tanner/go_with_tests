@@ -102,8 +102,10 @@ func TestGame(t *testing.T) {
 	})
 
 	t.Run("start a game with 3 players and declare Vika the winner", func(t *testing.T) {
-		game := &GameSpy{}
 		winner := "Vika"
+		wantedBlindAlert := "Blind is 100"
+
+		game := &GameSpy{BlindAlert: []byte(wantedBlindAlert)}
 		store := &poker.StubPlayerStore{}
 
 		server := httptest.NewServer(poker.EnsurePlayerServerCreated(t, store, game))
@@ -117,6 +119,8 @@ func TestGame(t *testing.T) {
 		time.Sleep(100 * time.Millisecond)
 		assertGameStartedWith(t, game, 3)
 		assertFinishCalledWith(t, game, winner)
+		_, gotBlindAlert, _ := ws.ReadMessage()
+		assertBlindAlert(t, string(gotBlindAlert), wantedBlindAlert)
 	})
 }
 
@@ -160,5 +164,13 @@ func assertFinishCalledWith(t testing.TB, game *GameSpy, winner string) {
 
 	if game.FinishedWith != winner {
 		t.Errorf("expected %s to win but got %s", winner, game.FinishedWith)
+	}
+}
+
+func assertBlindAlert(t testing.TB, got, want string) {
+	t.Helper()
+
+	if got != want {
+		t.Errorf("got %q but expected %q", got, want)
 	}
 }
